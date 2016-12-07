@@ -2,7 +2,7 @@
 # Static Site Generator
 ## Hagen
 We want to create a simple static-site generator, that can parse templates and text files. It should output a single HTML file while
-reading data from TXT files, and then writing that data to a HTML file. The idea is presented below.
+reading data from yaml files, and then writing that data to a HTML file. The idea is presented below.
 
 ## Project Structure
 ```
