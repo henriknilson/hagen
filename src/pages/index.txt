@@ -1,0 +1,3 @@
+template: index
+title: Welcome to the website
+text: "This is some introductory text."

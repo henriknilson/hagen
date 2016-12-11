@@ -50,19 +50,24 @@ transform config doc = before ++ value ++ (transform config after)
     (before, match, after) = mustache doc
     value = getConfigValue config match
 
+hagen :: FilePath -> IO ()
+hagen file = do
+
+  let fileName = reverse $ takeWhile (/= '/') $ drop 1 $ dropWhile (/= '.') (reverse file)
+
+  configFile <- parseData file
+  let config = parseConfig configFile
+
+  let templateFile = getConfigValue config "template"
+  template <- parseData ("src/templates/" ++ templateFile ++ ".html")
+  let transformed = transform config template
+
+  putStrLn $ "Writing " ++ fileName ++ ".html..."
+  createDirectoryIfMissing True "public"
+  writeFile ("public/" ++ fileName ++ ".html") transformed
+
 main :: IO ()
 main = do
-
-  putStrLn "Loading files..."
-  configFile <- parseData "data.txt"
-  htmlFile <- parseData "index.html"
-
-  putStrLn "Transforming templates..."
-  let config = parseConfig configFile
-  let transformed = transform config htmlFile
-
-  putStrLn "Writing new files..."
-  createDirectoryIfMissing True "public"
-  writeFile "public/output.html" transformed
-
+  files <- listDirectory "src/pages"
+  mapM (\file -> hagen $ "src/pages/" ++ file) files
   putStrLn "Done!"

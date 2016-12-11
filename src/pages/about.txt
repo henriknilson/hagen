@@ -1,0 +1,3 @@
+template: about
+title: About our company
+text: "This is who we are."

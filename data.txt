@@ -1,2 +1,0 @@
-title: Hello World
-text: "This is my first post."
