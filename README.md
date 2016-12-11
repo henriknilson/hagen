@@ -1,15 +1,15 @@
 
-# Static Site Generator
-## Hagen
-We want to create a simple static-site generator, that can parse templates and text files. It should output a single HTML file while
-reading data from yaml files, and then writing that data to a HTML file. The idea is presented below.
+# Hagen
+## About
+We want to create a simple static site generator, that can parse templates and text files. It should output a single HTML file while
+reading data from yaml- or txt-files, and then writing that data to a HTML file. The idea is presented below.
 
 ## Todo
 - [x] Parse mustache tags
 - [x] Load data from files
 - [x] Parse directories
-- [ ] Add \@include syntax for partials
-- [ ] Add \@for syntax for interating through items
+- [ ] Add #include syntax for partials
+- [ ] Add #for syntax
 - [ ] Copy all assets to public/
 
 ## Project Structure
