@@ -8,7 +8,7 @@ reading data from yaml- or txt-files, and then writing that data to a HTML file.
 - [x] Parse mustache tags
 - [x] Load data from files
 - [x] Parse directories
-- [ ] Add #include syntax for partials
+- [x] Add #include syntax for partials
 - [ ] Add #for syntax
 - [ ] Copy all assets to public/
 
