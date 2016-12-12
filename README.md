@@ -18,9 +18,9 @@ src/
 	assets/
 		style.css
 	pages/
-		2016-11-29.yaml
-		2016-11-30.yaml
-		about.yaml
+		2016-11-29.txt
+		2016-11-30.txt
+		about.txt
 	template/
 		index.html
 		about.html
@@ -51,7 +51,7 @@ single.html
 <p>{{ $date }}</p>
 {{ #include footer }}
 ```
-2016-11-29.yaml
+2016-11-29.txt
 ```
 template: single
 type: blogpost
