@@ -1,3 +1,3 @@
 template: about
 title: Contact us
-text: "Use email or whatever."
+text:	Use email or whatever.

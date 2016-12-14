@@ -1,7 +1,6 @@
 module Config (
   Config,
   parseConfig,
-  parseFile,
   getConfigValue
 ) where
 
@@ -19,12 +18,12 @@ import qualified Data.Text as T
 type Config = M.Map String String
 
 -- Prevent laziness when reading from a file
-parseFile :: FilePath -> IO String
-parseFile fileName = withFile fileName ReadMode $
-  \h -> do hSetEncoding h utf8_bom
-           contents <- hGetContents h
-           contents `deepseq` hClose h
-           return contents
+-- parseFile :: FilePath -> IO String
+-- parseFile fileName = withFile fileName ReadMode $
+--   \h -> do hSetEncoding h utf8_bom
+--            contents <- hGetContents h
+--            contents `deepseq` hClose h
+--            return contents
 
 -- Parse a config from a file
 parseConfig :: String -> Config
@@ -35,11 +34,13 @@ parseConfig = foldr addConfigValue M.empty . clean . lines
 getConfigValue :: Config -> String -> String
 getConfigValue c k = M.findWithDefault "" k c
 
+-- @todo spanna till kolon istället
+-- @todo lös tabbar (t.ex. isSeparator)
 extractKeyValue :: String -> (String, String)
 extractKeyValue text = (key, value)
-  where (k, vs) = span (/= ' ') text
-        key = map toLower $ takeWhile (/= ':') k
-        value = snd $ span (== ' ') vs
+  where (k, vs) = span (/= ':') text
+        key = map toLower k
+        value = dropWhile isSeparator $ drop 1 vs
 
 -- Add a value to a config
 addConfigValue :: String -> Config -> Config

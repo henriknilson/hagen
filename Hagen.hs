@@ -11,7 +11,7 @@ module Hagen (
   prop_mustache_regex
 ) where
 
-import Config (Config, getConfigValue, parseConfig, parseFile)
+import Config (Config, getConfigValue, parseConfig)
 import Control.DeepSeq
 import Data.Char
 import Data.List
@@ -46,10 +46,11 @@ prop_mustache_regex doc = or [
     (_,match,_) = mustache doc
 
 -- Finds the first #include tag and returns it
-include :: String -> (String, String, String)
+-- @todo kanske lämna tillbaka maybe
+include :: String -> Maybe (String, String, String)
 include doc = case R.matchRegexAll regex doc of
-  Nothing -> (doc, "", "")
-  Just (before, match, after, _) -> (before, filter (\c -> isAlpha c || isSeparator c) match, after)
+  Nothing -> Nothing
+  Just (before, match, after, _) -> Just (before, filter (\c -> isAlpha c || isSeparator c) match, after)
   where
     regex = R.mkRegex "{{[' ']?#include[' '][A-Za-z]+[' ']?}}"
 
@@ -65,25 +66,25 @@ compile config doc = before ++ value ++ (compile config after)
 
 -- Include partials in template using #include
 prepare :: String -> IO String
-prepare template = do
-
-  let (before, match, after) = include template
-  let partial = (words match) !! 1
-
-  return $ if match == "" && after == ""
-    then before ++ after
-    else before ++ (unsafePerformIO(Config.parseFile (partialDir ++ partial ++ ".html"))) ++ unsafePerformIO(prepare after)
+prepare template = case include template of
+  Nothing -> return template
+  Just (before, match, after) -> do
+    contents <- readFile (partialDir ++ partial ++ ".html")
+    preparedAfter <- prepare after
+    return $ before ++ contents ++ preparedAfter
+    where
+      partial = (words match) !! 1
 
 hagen :: FilePath -> IO ()
 hagen file = do
 
   let fileName = reverse $ takeWhile (/= '/') $ drop 1 $ dropWhile (/= '.') (reverse file)
 
-  configFile <- parseFile file
+  configFile <- readFile file
   let config = Config.parseConfig configFile
 
   let templateFile = Config.getConfigValue config "template"
-  template <- parseFile (templateDir ++ templateFile ++ ".html")
+  template <- readFile (templateDir ++ templateFile ++ ".html")
 
   prepared <- prepare template
   let compiled = compile config prepared
