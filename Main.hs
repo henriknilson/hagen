@@ -8,9 +8,10 @@ import Text.Regex as R
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Hagen
+import Test.QuickCheck
 
 main :: IO ()
 main = do
-  files <- listDirectory "src/pages"
-  mapM (\file -> Hagen.hagen $ "src/pages/" ++ file) files
+  files <- listDirectory Hagen.pagesDir
+  mapM (\file -> Hagen.hagen $ pagesDir ++ file) files
   putStrLn "Done!"

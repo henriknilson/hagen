@@ -3,7 +3,12 @@ module Hagen (
   include,
   compile,
   prepare,
-  hagen
+  hagen,
+  templateDir,
+  pagesDir,
+  publicDir,
+  partialDir,
+  prop_mustache_regex
 ) where
 
 import Config (Config, getConfigValue, parseConfig, parseFile)
@@ -17,6 +22,11 @@ import Text.Regex as R
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 
+templateDir = "src/templates/"
+pagesDir = "src/pages/"
+publicDir = "public/"
+partialDir = "src/partials/"
+
 -- Finds the first mustache tag and returns it
 mustache :: String -> (String, String, String)
 mustache doc = case R.matchRegexAll regex doc of
@@ -25,6 +35,16 @@ mustache doc = case R.matchRegexAll regex doc of
   where
     regex = R.mkRegex "{{[' ']?[A-Za-z]*[' ']?}}"
 
+prop_mustache_regex doc = or [
+    isInfixOf ("{{ " ++ match ++ " }}") doc,
+    isInfixOf ("{{" ++ match ++ "}}") doc,
+    isInfixOf ("{{ " ++ match ++ "}}") doc,
+    isInfixOf ("{{" ++ match ++ " }}") doc,
+    match == ""
+  ]
+  where
+    (_,match,_) = mustache doc
+
 -- Finds the first #include tag and returns it
 include :: String -> (String, String, String)
 include doc = case R.matchRegexAll regex doc of
@@ -32,6 +52,7 @@ include doc = case R.matchRegexAll regex doc of
   Just (before, match, after, _) -> (before, filter (\c -> isAlpha c || isSeparator c) match, after)
   where
     regex = R.mkRegex "{{[' ']?#include[' '][A-Za-z]+[' ']?}}"
+
 
 -- Recursively fetches all mustache tags in a document
 -- and converts with tags from the config
@@ -43,7 +64,6 @@ compile config doc = before ++ value ++ (compile config after)
     value = Config.getConfigValue config match
 
 -- Include partials in template using #include
--- @TODO: offer a lamb to the unsafe god
 prepare :: String -> IO String
 prepare template = do
 
@@ -52,7 +72,7 @@ prepare template = do
 
   return $ if match == "" && after == ""
     then before ++ after
-    else before ++ (unsafePerformIO(Config.parseFile ("src/partials/" ++ partial ++ ".html"))) ++ unsafePerformIO(prepare after)
+    else before ++ (unsafePerformIO(Config.parseFile (partialDir ++ partial ++ ".html"))) ++ unsafePerformIO(prepare after)
 
 hagen :: FilePath -> IO ()
 hagen file = do
@@ -63,11 +83,11 @@ hagen file = do
   let config = Config.parseConfig configFile
 
   let templateFile = Config.getConfigValue config "template"
-  template <- parseFile ("src/templates/" ++ templateFile ++ ".html")
+  template <- parseFile (templateDir ++ templateFile ++ ".html")
 
   prepared <- prepare template
   let compiled = compile config prepared
 
   putStrLn $ "Writing " ++ fileName ++ ".html..."
-  createDirectoryIfMissing True "public"
-  writeFile ("public/" ++ fileName ++ ".html") compiled
+  createDirectoryIfMissing True publicDir
+  writeFile (publicDir ++ fileName ++ ".html") compiled
