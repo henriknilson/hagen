@@ -31,13 +31,17 @@ parseConfig :: String -> Config
 parseConfig = foldr addConfigValue M.empty . clean . lines
   where clean = filter (not . flip any ["#", ";", "", " "] . (==) . take 1)
 
--- Add a value to a config
-addConfigValue :: String -> Config -> Config
-addConfigValue raw config = M.insert key value config
-  where (k, vs) = span (/= ' ') raw
-        key = map toLower $ takeWhile (/= ':') k
-        value = snd $ span (== ' ') vs
-
 -- Return the value in a config, given key
 getConfigValue :: Config -> String -> String
 getConfigValue c k = M.findWithDefault "" k c
+
+extractKeyValue :: String -> (String, String)
+extractKeyValue text = (key, value)
+  where (k, vs) = span (/= ' ') text
+        key = map toLower $ takeWhile (/= ':') k
+        value = snd $ span (== ' ') vs
+
+-- Add a value to a config
+addConfigValue :: String -> Config -> Config
+addConfigValue raw config = M.insert key value config
+  where (key, value) = extractKeyValue raw
