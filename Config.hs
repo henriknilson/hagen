@@ -24,8 +24,10 @@ parseConfig = foldr addConfigValue M.empty . clean . lines
   where clean = filter (not . flip any ["#", ";", "", " "] . (==) . take 1)
 
 -- A QuickCheck test to make sure that no comment is parsed as key/value
-prop_parseConfig_comments :: String -> Bool
-prop_parseConfig_comments s = null $ parseConfig s
+prop_parseConfig_comments = forAll commentGen noParseComments
+
+noParseComments :: String -> Bool
+noParseComments s = null $ parseConfig s
 
 -- Generates "commented" strings
 commentGen :: Gen String
