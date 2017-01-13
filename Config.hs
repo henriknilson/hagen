@@ -13,29 +13,31 @@ import System.IO.Unsafe
 import Text.Regex as R
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import Test.QuickCheck
 
 -- Contains the data to be used when parsing templates
 type Config = M.Map String String
-
--- Prevent laziness when reading from a file
--- parseFile :: FilePath -> IO String
--- parseFile fileName = withFile fileName ReadMode $
---   \h -> do hSetEncoding h utf8_bom
---            contents <- hGetContents h
---            contents `deepseq` hClose h
---            return contents
 
 -- Parse a config from a file
 parseConfig :: String -> Config
 parseConfig = foldr addConfigValue M.empty . clean . lines
   where clean = filter (not . flip any ["#", ";", "", " "] . (==) . take 1)
 
+-- A QuickCheck test to make sure that no comment is parsed as key/value
+prop_parseConfig_comments :: String -> Bool
+prop_parseConfig_comments s = null $ parseConfig s
+
+-- Generates "commented" strings
+commentGen :: Gen String
+commentGen = do
+  c <- elements ['#', ';']
+  s <- filter (/= '\n') <$> arbitrary
+  return $ c:s
+
 -- Return the value in a config, given key
 getConfigValue :: Config -> String -> String
 getConfigValue c k = M.findWithDefault "" k c
 
--- @todo spanna till kolon istället
--- @todo lös tabbar (t.ex. isSeparator)
 extractKeyValue :: String -> (String, String)
 extractKeyValue text = (key, value)
   where (k, vs) = span (/= ':') text
